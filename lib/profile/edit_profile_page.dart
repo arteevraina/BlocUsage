@@ -36,7 +36,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       drawer: const SideDrawer(),
       body: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
-          if (state is ProfileSaved) {
+          if (state.isSaved) {
             // This is just listening state and doing a side effect by
             // showing a snack bar and not actually building the whole tree.
             // Show a snackbar.
@@ -78,7 +78,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               const SizedBox(height: 28.0),
               BlocBuilder<ProfileCubit, ProfileState>(
                 builder: (context, state) {
-                  return (state is ProfileSaving)
+                  return (state.isSaving)
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: () {
@@ -87,6 +87,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             // Since, main objective of this sample is to
                             // show case how to use Bloc.
                             final user = User(
+                              id: 1,
                               name: nameController.text,
                               email: emailController.text,
                               age: ageController.text,

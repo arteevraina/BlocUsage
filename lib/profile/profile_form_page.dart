@@ -46,7 +46,7 @@ class _ProfileFormPageViewState extends State<ProfileFormPageView> {
       appBar: AppBar(
         title: const Text('Profile Form Page'),
       ),
-      drawer: const SideDrawer(),
+      // drawer: const SideDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Note here we are not creating a new Bloc.
@@ -67,7 +67,7 @@ class _ProfileFormPageViewState extends State<ProfileFormPageView> {
       ),
       body: BlocListener<ProfileCubit, ProfileState>(
         listener: (context, state) {
-          if (state is ProfileSaved) {
+          if (state.isSaved) {
             // This is just listening state and doing a side effect by
             // showing a snack bar and not actually building the whole tree.
             // Show a snackbar.
@@ -109,7 +109,7 @@ class _ProfileFormPageViewState extends State<ProfileFormPageView> {
               const SizedBox(height: 28.0),
               BlocBuilder<ProfileCubit, ProfileState>(
                 builder: (context, state) {
-                  return (state is ProfileSaving)
+                  return (state.isSaving)
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: () {
@@ -118,6 +118,7 @@ class _ProfileFormPageViewState extends State<ProfileFormPageView> {
                             // Since, main objective of this sample is to
                             // show case how to use Bloc.
                             final user = User(
+                              id: 2,
                               name: nameController.text,
                               email: emailController.text,
                               age: ageController.text,
@@ -130,7 +131,8 @@ class _ProfileFormPageViewState extends State<ProfileFormPageView> {
                           child: const Text("Submit"),
                         );
                 },
-              )
+              ),
+              const UserList(),
             ],
           ),
         ),
@@ -146,14 +148,36 @@ class SideDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
+    return Expanded(
       child: ListView(
+        shrinkWrap: true,
         children: <Widget>[
           ListTile(
             title: BlocBuilder<ProfileCubit, ProfileState>(
               builder: (context, state) {
-                if (state is ProfileSaved) {
-                  return Text("Name: ${state.user.name}");
+                log("Name Rebuilt");
+                if (state.isSaved) {
+                  return Text("Name: ${state.user?.name}");
+                }
+
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+          ListTile(
+            title: BlocBuilder<ProfileCubit, ProfileState>(
+              buildWhen: (previous, current) {
+                if (previous.user?.age != current.user?.age) {
+                  log("We are here");
+                  return true;
+                }
+
+                return false;
+              },
+              builder: (context, state) {
+                log("Age Rebuilt");
+                if (state.isSaved) {
+                  return Text("Age: ${state.user?.age}");
                 }
 
                 return const SizedBox.shrink();
@@ -163,8 +187,9 @@ class SideDrawer extends StatelessWidget {
           ListTile(
             title: BlocBuilder<ProfileCubit, ProfileState>(
               builder: (context, state) {
-                if (state is ProfileSaved) {
-                  return Text("Age: ${state.user.age}");
+                log("Gender Rebuilt");
+                if (state.isSaved) {
+                  return Text("Gender: ${state.user?.gender}");
                 }
 
                 return const SizedBox.shrink();
@@ -174,19 +199,9 @@ class SideDrawer extends StatelessWidget {
           ListTile(
             title: BlocBuilder<ProfileCubit, ProfileState>(
               builder: (context, state) {
-                if (state is ProfileSaved) {
-                  return Text("Gender: ${state.user.gender}");
-                }
-
-                return const SizedBox.shrink();
-              },
-            ),
-          ),
-          ListTile(
-            title: BlocBuilder<ProfileCubit, ProfileState>(
-              builder: (context, state) {
-                if (state is ProfileSaved) {
-                  return Text("Email: ${state.user.email}");
+                log("Email Rebuilt");
+                if (state.isSaved) {
+                  return Text("Email: ${state.user?.email}");
                 }
 
                 return const SizedBox.shrink();
@@ -194,6 +209,31 @@ class SideDrawer extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class UserList extends StatelessWidget {
+  const UserList({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ListView.separated(
+        itemBuilder: (context, index) {
+          return Card(
+            child: ListTile(
+              leading: Text(users[index].id.toString()),
+              title: Text(users[index].name),
+              subtitle: Text(users[index].age),
+            ),
+          );
+        },
+        separatorBuilder: (context, index) {
+          return const SizedBox(height: 8.0);
+        },
+        itemCount: users.length,
       ),
     );
   }

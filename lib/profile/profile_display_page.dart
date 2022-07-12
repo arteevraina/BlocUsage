@@ -30,19 +30,19 @@ class ProfileDisplayPage extends StatelessWidget {
         child: const Icon(Icons.edit),
       ),
       body: BlocBuilder<ProfileCubit, ProfileState>(builder: (context, state) {
-        if (state is ProfileSaved) {
+        if (state.isSaved) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Name: ${state.user.name}"),
-                Text("Email: ${state.user.email}"),
-                Text("Age: ${state.user.age}"),
-                Text("Gender: ${state.user.gender}"),
+                Text("Name: ${state.user?.name}"),
+                Text("Email: ${state.user?.email}"),
+                Text("Age: ${state.user?.age}"),
+                Text("Gender: ${state.user?.gender}"),
               ],
             ),
           );
-        } else if (state is ProfileInitial) {
+        } else if (state.user == null) {
           return const Center(
             child: Text("Please Save Profile first"),
           );
